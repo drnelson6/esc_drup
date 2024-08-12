@@ -123,6 +123,12 @@ def get_part_lines(doc_num, part_num):
     return payload
 
 
+def get_part_transcription(doc_num, part_num):
+    url = urljoin(base_url, f'api/documents/{doc_num}/parts/{part_num}/transcriptions/{trans_pk}')
+    payload = paginate(True, url)
+    return payload
+
+
 def search_for_matches(data, meta):
     '''Search for matches and update data with Drupal NIDs.
     Prints any non-matches.
