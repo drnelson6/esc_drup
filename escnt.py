@@ -49,6 +49,7 @@ def create_document(session, document_name, project_name):
         "tags": []
     }
     response = session.post(url, json=data)
+    response.raise_for_status()
     return response
 
 
