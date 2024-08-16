@@ -118,13 +118,13 @@ def get_doc_transcriptions(doc_num):
 
 
 def get_part_lines(doc_num, part_num):
-    url = urljoin(base_url, 'fapi/documents/{doc_num}/parts/{part_num}/lines/')
+    url = urljoin(base_url, f'api/documents/{doc_num}/parts/{part_num}/lines/')
     payload = paginate(True, url)
     return payload
 
 
 def get_part_transcription(doc_num, part_num):
-    url = urljoin(base_url, f'api/documents/{doc_num}/parts/{part_num}/transcriptions/{trans_pk}')
+    url = urljoin(base_url, f'api/documents/{doc_num}/parts/{part_num}/transcriptions/')
     payload = paginate(True, url)
     return payload
 
@@ -191,7 +191,6 @@ def create_projs_from_dict(projs):
     proj_list = []
     for p in projs:
         pk = p['pk']
-        print(pk)
         nid = p['nid']
         slug = p['slug']
         name = p['name']
@@ -209,3 +208,41 @@ def load_json(path):
         data = json.load(f)
     projects = create_projs_from_dict(data)
     return projects
+
+
+def find_project_by_folder(folder, projects):
+    for project in projects:
+        if project.folder == folder:
+            target = project
+
+    return target
+
+def search_for_doc(project, pk):
+    docs = project.documents
+    for doc in docs:
+        if doc.pk == pk:
+            target = doc
+
+    return target
+
+
+def update_part_status(part, transcription):
+    part.exclude = False
+    for trans in part.transcriptions:
+        if trans.name == transcription:
+            trans.is_canonical = True
+
+
+def update_doc_transcriptions(doc, transcription, exclude=None):
+    parts = doc.parts
+    if exclude is None:
+        exclude = []
+    for part in parts:
+        if part.pk not in exclude:
+            update_part_status(part, transcription)
+
+
+def update_selected_parts(doc, transcription, parts):
+    all_parts = doc.parts
+    exclude = [p for p in all_parts if p.pk not in parts]
+    update_doc_transcriptions(doc, transcription, exclude=exclude)
