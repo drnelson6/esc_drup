@@ -7,13 +7,14 @@ from dotenv import load_dotenv
 from urllib.parse import urljoin
 import json
 
-
+# environmental variables
 load_dotenv()
 api_key = str(os.getenv('ESCRIPT_API'))
 base_url = 'https://transcription.amphilsoc.org'
 
 headers = {'Accept': 'application/json', 'Authorization': f'Token {api_key}'}
 
+# load project directories
 with open('projects.json', 'r') as f:
     project_dirs = json.load(f)
 
@@ -23,6 +24,7 @@ def dump_json(path, data):
         json.dump(data, f, default=lambda o: o.__dict__, indent=4) 
 
 
+# classes to represent eScriptorium data structures
 class Project:
     def __init__(self, pk, nid, slug, name):
         self.pk = pk
@@ -244,5 +246,5 @@ def update_doc_transcriptions(doc, transcription, exclude=None):
 
 def update_selected_parts(doc, transcription, parts):
     all_parts = doc.parts
-    exclude = [p for p in all_parts if p.pk not in parts]
+    exclude = [p.pk for p in all_parts if p.pk not in parts]
     update_doc_transcriptions(doc, transcription, exclude=exclude)
