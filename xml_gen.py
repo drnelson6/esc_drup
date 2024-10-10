@@ -177,7 +177,8 @@ def process_zips():
     move_xml_files(os.path.join(base_dir, 'unzipped'))
 
 
-@click.option('--images/', is_flag=True)
+@click.command()
+@click.option('--images', is_flag=True)
 def cli(images):
     if images:
         generate_exports(include_images=True)
