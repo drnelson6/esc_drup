@@ -1,6 +1,3 @@
-from pathlib import Path
-import requests
-from PIL import Image
 import os
 from dotenv import load_dotenv
 import csv

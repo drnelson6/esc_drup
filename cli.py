@@ -11,6 +11,7 @@ password = str(os.getenv('REVCITY_PASSWORD'))
 auth = (username, password)
 api_key = str(os.getenv('ESCRIPT_API'))
 
+
 @click.command()
 @click.argument('nid')
 @click.argument('path')

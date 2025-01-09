@@ -13,10 +13,12 @@ base_url = 'https://transcription.amphilsoc.org'
 
 headers = {'Accept': 'application/json', 'Authorization': f'Token {api_key}'}
 
+
 def connect_escr(headers):
     session = requests.Session()
     session.headers.update(headers)
     return session
+
 
 def create_project(session, project_name):
     url = urljoin(base_url, 'api/projects/')
@@ -70,14 +72,14 @@ def upload_images(session, doc, collection, nid, files):
             "typology": None,
             "source": ""
         }
-        file_path = f'U:\htr_revcity\image_files\{collection}\{nid}\{file_name}'
+        file_path = f'U:\\htr_revcity\\image_files\\{collection}\\{nid}\\{file_name}'
         response = session.post(url, json=data, files={'image': open(file_path, 'rb')})
         response.raise_for_status()
 
 
 def dump_collection(project_name, docs, collection, files):
     session = connect_escr(headers)
-    project = create_project(session, project_name)
+    create_project(session, project_name)
     for d in docs:
         nid = d['nid']
         manu = files[nid]

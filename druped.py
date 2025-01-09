@@ -9,11 +9,11 @@ import os
 import click
 
 
-
 def connect_revcity(auth):
     s = requests.session()
     s.auth = auth
     return s
+
 
 def get_metadata(session, nid):
     '''Return NID and title for all items in collection'''
@@ -54,8 +54,8 @@ def load_image(url):
     request = requests.get(url, stream=True)
     request.raise_for_status()
     image_data = Image.open(io.BytesIO(request.content))
-    return image_data
     time.sleep(1)
+    return image_data
 
 
 def save_image(image, path):
@@ -76,9 +76,8 @@ def download_book(session, data, path):
         save_image(image_data, os.path.join(path, file_name + '.jpg'))
 
 
-
 def download_collection(nid, auth, path):
-    base_path = 'U:\htr_revcity\image_files'
+    base_path = 'U:\\htr_revcity\\image_files'
     path = os.path.join(base_path, path)
     if not os.path.isdir(path):
         os.makedirs(path)
