@@ -6,11 +6,15 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import urljoin
 import json
+from druped import connect_revcity, get_metadata
 
 # environmental variables
 load_dotenv()
 api_key = str(os.getenv('ESCRIPT_API'))
 base_url = 'https://transcription.amphilsoc.org'
+username = str(os.getenv('REVCITY_USERNAME'))
+password = str(os.getenv('REVCITY_PASSWORD'))
+auth = (username, password)
 
 headers = {'Accept': 'application/json', 'Authorization': f'Token {api_key}'}
 
@@ -21,7 +25,7 @@ with open('projects.json', 'r') as f:
 
 def dump_json(path, data):
     with open(path, 'w') as f:
-        json.dump(data, f, default=lambda o: o.__dict__, indent=4) 
+        json.dump(data, f, default=lambda o: o.__dict__, indent=4)
 
 
 # classes to represent eScriptorium data structures
@@ -34,6 +38,9 @@ class Project:
         self.folder = project_dirs[str(pk)]
         self.documents = []
 
+    def __str__(self):
+        return self.name
+
     def add_docs(self, doc_list):
         for d in doc_list:
             self.documents.append(d)
@@ -45,6 +52,9 @@ class Document:
         self.nid = nid
         self.name = name
         self.parts = []
+
+    def __str__(self):
+        return self.name
 
     def add_parts(self, part_list):
         for part in part_list:
@@ -60,6 +70,9 @@ class Part:
         self.transcriptions = []
         self.exclude = True
 
+    def __str__(self):
+        return self.file
+
     def add_transcriptions(self, trans_list):
         for t in trans_list:
             self.transcriptions.append(t)
@@ -71,6 +84,9 @@ class Transcription:
         self.name = name
         self.is_canonical = False
 
+    def __str__(self):
+        return self.name
+
 
 def paginate(loop, url):
     results = []
@@ -81,7 +97,7 @@ def paginate(loop, url):
         payload = [item for item in r['results']]
         results = results + payload
         status = r['next']
-        if status == None:
+        if status is None:
             loop = False
         else:
             url = status
@@ -137,7 +153,7 @@ def search_for_matches(data, meta):
 
     Input:
     - data: document data dump from eScriptorium
-    -meta: collection metadata from Drupal
+    - meta: collection metadata from Drupal
 
     Output: data updated with Drupal NIDs
     '''
@@ -219,6 +235,7 @@ def find_project_by_folder(folder, projects):
 
     return target
 
+
 def search_for_doc(project, pk):
     docs = project.documents
     for doc in docs:
@@ -248,3 +265,26 @@ def update_selected_parts(doc, transcription, parts):
     all_parts = doc.parts
     exclude = [p.pk for p in all_parts if p.pk not in parts]
     update_doc_transcriptions(doc, transcription, exclude=exclude)
+
+
+def sync_new_project(project, folder, nid):
+    all_docs = get_raw_documents()
+    all_projs = get_raw_projects()
+    proj = [r for r in all_projs if r['name'] == project][0]
+    proj_pk = proj['id']
+    slug = proj['slug']
+    docs = [d for d in all_docs if d['project_id'] == proj_pk]
+    rev_sess = connect_revcity(auth)
+    meta = get_metadata(rev_sess, nid)
+    docs = search_for_matches(docs, meta)
+    for doc in docs:
+        doc_parts = get_doc_parts(doc['pk'])
+        trans = get_doc_transcriptions(doc['pk'])
+        for p in doc_parts:
+            p.update({'transcriptions': trans})
+        doc.update({'parts': doc_parts})
+    prepared_docs = create_docs_from_dict(docs, from_api=True)
+    prepared_project = Project(proj_pk, nid, slug, project)
+    prepared_project.add_docs(prepared_docs)
+
+    return prepared_project
