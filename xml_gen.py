@@ -21,6 +21,7 @@ headers = {'Accept': 'application/json', 'Authorization': f'Token {api_key}'}
 # https://stackoverflow.com/questions/23102833/how-to-scrape-a-website-which-requires-login-using-python-and-beautifulsoup
 # Credentials must be periodically updated
 
+
 def download_zips(num):
     with open('credentials.json', 'r') as f:
         creds = json.load(f)
@@ -99,7 +100,7 @@ def generate_zip_exports(doc_pk, part_dict, include_images=False):
         # exports named after time of export to the minute, so need to wait one minute
         if n > 1:
             sleep(60)
-    
+
     return n
 
 
@@ -108,7 +109,7 @@ def check_export_status():
     r = requests.get(url, headers=headers)
     r.raise_for_status
     results = r.json()['results']
-    if results[0]['done_at'] == None:
+    if results[0]['done_at'] is None:
         return False
     else:
         return True
@@ -126,13 +127,14 @@ def generate_exports(include_images=False):
                 out = generate_zip_exports(doc_pk, parts, include_images=include_images)
                 print(f'Generating export for {doc.name}...')
                 n = n + out
-    
+
     print(f'Generated {n} exports.')
     status = False
     while status is False:
         status = check_export_status()
         sleep(5)
     download_zips(n)
+
 
 def unzip_downloads(base_dir, files):
     dest_dir = os.path.join(base_dir, 'unzipped')
