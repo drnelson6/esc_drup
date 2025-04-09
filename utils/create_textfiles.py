@@ -44,7 +44,7 @@ def generate_plain_transcriptions(direc):
             soup = parse_xml(os.path.join(direc, i, f))
             lines = extract_lines(soup)
             texts.update({file_name: lines})
-    return(texts)
+    return texts
 
 
 def write_textfiles(transcriptions, direc):
@@ -54,11 +54,13 @@ def write_textfiles(transcriptions, direc):
             lines = map(lambda x: x + '\n', transcriptions[i])
             f.writelines(lines)
 
+
 def cli():
     source_dir = 'U:/htr_revcity/image_files'
     target_dir = 'U:/htr_revcity/textfiles'
     transcriptions = generate_plain_transcriptions(source_dir)
     write_textfiles(transcriptions, target_dir)
+
 
 if __name__ == '__main__':
     cli()
