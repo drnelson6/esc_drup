@@ -48,5 +48,5 @@ def cli():
     write_to_csv(data, today)
 
 
-if __name__ =='__main__':
+if __name__ == '__main__':
     cli()

@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import urljoin
 import json
-from druped import connect_revcity, get_metadata
+from druped import connect_drupal, get_metadata
 
 # environmental variables
 load_dotenv()
@@ -59,6 +59,12 @@ class Document:
     def add_parts(self, part_list):
         for part in part_list:
             self.parts.append(part)
+
+    def delete_parts(self, part_num):
+        for n, part in enumerate(self.parts):
+            if part.pk == part_num:
+                del self.parts[n]
+                break
 
 
 class Part:
@@ -145,6 +151,12 @@ def get_part_transcription(doc_num, part_num):
     url = urljoin(base_url, f'api/documents/{doc_num}/parts/{part_num}/transcriptions/')
     payload = paginate(True, url)
     return payload
+
+
+def get_doc(doc_num):
+    # parts = get_doc_parts(doc_num)
+    # transcriptions =
+    pass
 
 
 def search_for_matches(data, meta):
@@ -274,8 +286,8 @@ def sync_new_project(project, folder, nid):
     proj_pk = proj['id']
     slug = proj['slug']
     docs = [d for d in all_docs if d['project_id'] == proj_pk]
-    rev_sess = connect_revcity(auth)
-    meta = get_metadata(rev_sess, nid)
+    sess = connect_drupal(auth)
+    meta = get_metadata(sess, nid)
     docs = search_for_matches(docs, meta)
     for doc in docs:
         doc_parts = get_doc_parts(doc['pk'])
