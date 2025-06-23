@@ -9,8 +9,12 @@ import os
 import click
 import csv
 
+
 REV_CITY = 'https://therevolutionarycity.org'
 DIG_LIB = 'https://diglib.amphilsoc.org'
+
+# avoid decompression bomb error
+Image.MAX_IMAGE_PIXELS = None
 
 
 def connect_drupal(auth):
@@ -132,7 +136,7 @@ def generate_file_csv(nids, auth, host, output_file):
 def get_hocr_files(session, nids, host):
     '''For an object that already has hOCR files in Drupal, get the media ID'''
     # TODO: test behavior when not all pages have hOCR files
-    url = f'{host}/show-hocr-api'
+    url = f'{host}/show-hocr-api/'
     payload = []
     for nid in nids:
         request = session.get(url + str(nid))
@@ -141,3 +145,51 @@ def get_hocr_files(session, nids, host):
         payload.append(data)
 
     return payload
+
+
+def get_filenames_and_nids(session, nids, host):
+    '''For an object, get the nids and the file basename for all children'''
+    url = f'{host}/file-basenames-for-hocr/'
+    payload = []
+    for nid in nids:
+        print(f'Querying {nid}...')
+        request = session.get(url + str(nid))
+        request.raise_for_status
+        data = request.json()
+        payload = payload + data
+
+    return payload
+
+
+def associate_files_and_nids(folder, data):
+    '''Return only Drupal nodes whose hOCR files exist'''
+    files = os.listdir(folder)
+    output = []
+    for d in data:
+        nid = d['nid']
+        raw_file = d['field_media_file']
+        file = raw_file.strip()
+        for ext in ['.tif', '.tiff', '.jp2']:
+            if ext in file:
+                file = file.replace(ext, '.html')
+        test_string = file.replace(':', '%3A')
+        if test_string in files:
+            output.append([nid, file])
+
+    return output
+
+
+def generate_hocr_wb(session, host, folder, nids):
+    metadata = get_filenames_and_nids(session, nids, host)
+    wb_prepared = associate_files_and_nids(folder, metadata)
+    return wb_prepared
+
+
+def write_wb_to_csv(auth, host, folder, nids, path):
+    s = connect_drupal(auth)
+    wb_prepared = generate_hocr_wb(s, host, folder, nids)
+    with open(path, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(['node_id', 'file'])
+        for row in wb_prepared:
+            writer.writerow(row)
