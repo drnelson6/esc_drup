@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import druped
-import escnt
+from core import druped
+from core import escnt
 import csv
 import os
 from dotenv import load_dotenv
