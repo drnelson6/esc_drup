@@ -19,7 +19,7 @@ auth = (username, password)
 headers = {'Accept': 'application/json', 'Authorization': f'Token {api_key}'}
 
 # load project directories
-with open('projects.json', 'r') as f:
+with open('../projects.json', 'r') as f:
     project_dirs = json.load(f)
 
 
@@ -29,42 +29,14 @@ def dump_json(path, data):
 
 
 # classes to represent eScriptorium data structures
-class Project:
-    def __init__(self, pk, nid, slug, name):
+class Transcription:
+    def __init__(self, pk, name):
         self.pk = pk
-        self.nid = nid
-        self.slug = slug
         self.name = name
-        self.folder = project_dirs[str(pk)]
-        self.documents = []
+        self.is_canonical = False
 
     def __str__(self):
         return self.name
-
-    def add_docs(self, doc_list):
-        for d in doc_list:
-            self.documents.append(d)
-
-
-class Document:
-    def __init__(self, pk, nid, name):
-        self.pk = pk
-        self.nid = nid
-        self.name = name
-        self.parts = []
-
-    def __str__(self):
-        return self.name
-
-    def add_parts(self, part_list):
-        for part in part_list:
-            self.parts.append(part)
-
-    def delete_parts(self, part_num):
-        for n, part in enumerate(self.parts):
-            if part.pk == part_num:
-                del self.parts[n]
-                break
 
 
 class Part:
@@ -84,14 +56,61 @@ class Part:
             self.transcriptions.append(t)
 
 
-class Transcription:
-    def __init__(self, pk, name):
+class Document:
+    def __init__(self, pk, nid, name):
         self.pk = pk
+        self.nid = nid
         self.name = name
-        self.is_canonical = False
+        self.parts = []
 
     def __str__(self):
         return self.name
+
+    def add_parts(self, part_list):
+        for part in part_list:
+            self.parts.append(part)
+
+    # should implement symmetry of naming between add and delete methods
+    def delete_part(self, part_num):
+        for n, part in enumerate(self.parts):
+            if part.pk == part_num:
+                del self.parts[n]
+                break
+
+    def sync_with_api(self):
+        # delete parts that have been deleted from UI
+        api_parts = get_doc_parts(self.pk)
+        api_part_pks = [p['pk'] for p in api_parts]
+        for part in self.parts:
+            if part.pk not in api_part_pks:
+                self.delete_part(part.pk)
+
+        # update transcription list
+        api_transcriptions = get_doc_transcriptions(self.pk)
+        for part in self.parts:
+            trans_list = [t.pk for t in part.transcriptions]
+            # BUG: does not delete transcriptions that have been deleted from UI
+            for t in api_transcriptions:
+                if t['pk'] not in trans_list:
+                    new_trans = Transcription(pk=t['pk'], name=t['name'])
+                    part.add_transcriptions([new_trans])
+
+
+class Project:
+    def __init__(self, pk, nid, slug, name):
+        self.pk = pk
+        self.nid = nid
+        self.slug = slug
+        self.name = name
+        self.folder = project_dirs[str(pk)]
+        self.documents = []
+
+    def __str__(self):
+        return self.name
+
+    def add_docs(self, doc_list):
+        for d in doc_list:
+            self.documents.append(d)
 
 
 def paginate(loop, url):
@@ -184,7 +203,10 @@ def create_docs_from_dict(docs, from_api=False):
     doc_list = []
     for d in docs:
         pk = d['pk']
-        nid = d['nid']
+        try:
+            nid = d['nid']
+        except KeyError:
+            nid = ''
         name = d['name']
         doc = Document(pk, nid, name)
         part_list = []
@@ -259,6 +281,7 @@ def search_for_doc(project, pk):
 
 def update_part_status(part, transcription):
     part.exclude = False
+    # BUG: method should throw error if no matches found
     for trans in part.transcriptions:
         if trans.name == transcription:
             trans.is_canonical = True
@@ -279,16 +302,17 @@ def update_selected_parts(doc, transcription, parts):
     update_doc_transcriptions(doc, transcription, exclude=exclude)
 
 
-def sync_new_project(project, folder, nid):
+def sync_new_project(project, folder, nid=None):
     all_docs = get_raw_documents()
     all_projs = get_raw_projects()
     proj = [r for r in all_projs if r['name'] == project][0]
     proj_pk = proj['id']
     slug = proj['slug']
     docs = [d for d in all_docs if d['project_id'] == proj_pk]
-    sess = connect_drupal(auth)
-    meta = get_metadata(sess, nid)
-    docs = search_for_matches(docs, meta)
+    if nid is not None:
+        sess = connect_drupal(auth)
+        meta = get_metadata(sess, nid, host='https://therevolutionarycity.org')
+        docs = search_for_matches(docs, meta)
     for doc in docs:
         doc_parts = get_doc_parts(doc['pk'])
         trans = get_doc_transcriptions(doc['pk'])
