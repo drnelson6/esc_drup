@@ -3,3 +3,7 @@ data.json.bak
 get_child_nids.py
 credentials.json
 ed-workshops-upload.csv
+utils/credentials.json
+hocr.lst
+wb_output.csv
+ed-workshops-uploads.csv
