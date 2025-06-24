@@ -66189,18 +66189,6 @@
                         "exclude": false
                     },
                     {
-                        "pk": 5216,
-                        "file": "apsrevcity%3A12485.jpg",
-                        "transcriptions": [
-                            {
-                                "pk": 562,
-                                "name": "manual",
-                                "is_canonical": true
-                            }
-                        ],
-                        "exclude": false
-                    },
-                    {
                         "pk": 5217,
                         "file": "apsrevcity%3A12486.jpg",
                         "transcriptions": [
