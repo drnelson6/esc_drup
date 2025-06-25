@@ -72441,23 +72441,6 @@
                         "exclude": false
                     },
                     {
-                        "pk": 4289,
-                        "file": "apsrevcity%3A16891.jpg",
-                        "transcriptions": [
-                            {
-                                "pk": 486,
-                                "name": "manual",
-                                "is_canonical": false
-                            },
-                            {
-                                "pk": 1808,
-                                "name": "kraken:general_model_feb_2025",
-                                "is_canonical": true
-                            }
-                        ],
-                        "exclude": false
-                    },
-                    {
                         "pk": 4290,
                         "file": "apsrevcity%3A16896.jpg",
                         "transcriptions": [
@@ -73257,28 +73240,6 @@
                     {
                         "pk": 4348,
                         "file": "apsrevcity%3A16967.jpg",
-                        "transcriptions": [
-                            {
-                                "pk": 494,
-                                "name": "manual",
-                                "is_canonical": false
-                            },
-                            {
-                                "pk": 1237,
-                                "name": "general_model_feb_2025",
-                                "is_canonical": true
-                            },
-                            {
-                                "pk": 1242,
-                                "name": "kraken:general_model_feb_2025",
-                                "is_canonical": false
-                            }
-                        ],
-                        "exclude": false
-                    },
-                    {
-                        "pk": 4350,
-                        "file": "apsrevcity%3A16960.jpg",
                         "transcriptions": [
                             {
                                 "pk": 494,
@@ -77201,23 +77162,6 @@
                         "exclude": false
                     },
                     {
-                        "pk": 4639,
-                        "file": "hsprevcity%3A9313.jpg",
-                        "transcriptions": [
-                            {
-                                "pk": 510,
-                                "name": "manual",
-                                "is_canonical": true
-                            },
-                            {
-                                "pk": 868,
-                                "name": "kraken:sept_general_big",
-                                "is_canonical": false
-                            }
-                        ],
-                        "exclude": false
-                    },
-                    {
                         "pk": 4640,
                         "file": "hsprevcity%3A9325.jpg",
                         "transcriptions": [
@@ -79947,18 +79891,6 @@
                     {
                         "pk": 4848,
                         "file": "hsprevcity%3A9012.jpg",
-                        "transcriptions": [
-                            {
-                                "pk": 514,
-                                "name": "manual",
-                                "is_canonical": true
-                            }
-                        ],
-                        "exclude": false
-                    },
-                    {
-                        "pk": 4850,
-                        "file": "hsprevcity%3A8995.jpg",
                         "transcriptions": [
                             {
                                 "pk": 514,
